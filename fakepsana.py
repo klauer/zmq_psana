@@ -39,15 +39,21 @@ class Event(object):
         self._data = {}
         self._access = {}
         for np in md['npdata']:
-            data = ds.socket.recv()
-            data = numpy.frombuffer(data, dtype=np[2])
-            data = data.reshape(np[3])
+            if len(np[3]) == 0:
+                data = None
+            else:
+                data = ds.socket.recv()
+                data = numpy.frombuffer(data, dtype=np[2])
+                data = data.reshape(np[3])
             self._data[np[0]] = data
             self._access[np[0]] = np[1]
         data = ds.socket.recv() # Final ""!
         ## Special detectors processing.
         self._evtId = EventId(md['evtId'])
-        self._enrc  = BldDataFEEGasDetEnergyV1(md['enrc'])
+        if len(md['enrc']) == 0:
+            self._enrc = None
+        else:
+            self._enrc  = BldDataFEEGasDetEnergyV1(md['enrc'])
         self._access['FEEGasDetEnergy'] = 'get'
         self._data['FEEGasDetEnergy'] = self._enrc
         ## Add data/access for additional special type detectors here!!
